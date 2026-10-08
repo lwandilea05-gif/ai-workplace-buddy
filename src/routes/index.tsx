@@ -30,9 +30,9 @@ const viewCopy: Record<View, { title: string; subtitle: string }> = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Workmate AI | Workplace Productivity Assistant" },
+      { title: "AI Workplace Productivity Assistant" },
       { name: "description", content: "Generate professional emails, ask workplace questions, and summarize research with a private, frontend-only AI assistant demo." },
-      { property: "og:title", content: "Workmate AI | Workplace Productivity Assistant" },
+      { property: "og:title", content: "AI Workplace Productivity Assistant" },
       { property: "og:description", content: "Professional email, workplace chat, and research tools in one focused workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -57,7 +57,7 @@ function WorkplaceApp() {
         <aside className={cn("fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col border-r border-border/70 bg-glass-strong p-4 backdrop-blur-2xl transition-transform md:static md:translate-x-0", mobileNav ? "translate-x-0" : "-translate-x-full")}>
           <div className="flex items-center gap-2.5 px-1 py-3">
             <div className="grid size-9 place-items-center rounded-lg bg-accent-deep text-primary-foreground shadow-sm"><BriefcaseBusiness className="size-4" /></div>
-            <div className="leading-tight"><div className="text-sm font-bold">Workmate</div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-mist">Workplace AI</div></div>
+            <div className="leading-tight"><div className="text-sm font-bold">AI Workplace</div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-mist">Productivity Assistant</div></div>
             <Button aria-label="Close menu" className="ml-auto md:hidden" onClick={() => setMobileNav(false)} size="icon-sm" variant="ghost"><X /></Button>
           </div>
           <nav aria-label="Main navigation" className="mt-4 flex flex-col gap-1">
@@ -95,11 +95,11 @@ function WorkplaceApp() {
 }
 
 function EmailGenerator() {
-  const [prompt, setPrompt] = useState("Write a short email to Priya and the Northwind Ops team confirming that the Q4 vendor review has moved to Thursday, 2:00 PM, and ask everyone to bring their shortlist notes.");
+  const [prompt, setPrompt] = useState("");
   const [tone, setTone] = useState<Tone>("Formal");
-  const [status, setStatus] = useState<"idle" | "loading" | "ready">("ready");
+  const [status, setStatus] = useState<"idle" | "loading" | "ready">("idle");
   const [copied, setCopied] = useState(false);
-  const [draft, setDraft] = useState("Subject: Q4 vendor review moved to Thursday, 2:00 PM\n\nHi Priya and team,\n\nThe Q4 vendor review has been moved to Thursday at 2:00 PM in the Riverside room. Please treat Thursday as the confirmed time.\n\nCould everyone bring their shortlist notes and the pricing sheet for their assigned vendors? I’ll share the consolidated agenda before the meeting.\n\nThanks,\nRachel");
+  const [draft, setDraft] = useState("");
 
   const generate = () => {
     if (!prompt.trim()) return;
@@ -156,7 +156,7 @@ function WorkplaceChat() {
 
   return (
     <section className="glass-panel mx-auto flex min-h-[650px] max-w-4xl flex-col overflow-hidden rounded-lg">
-      <div className="flex items-center gap-3 border-b border-border px-5 py-4"><div className="grid size-9 place-items-center rounded-lg bg-accent-deep text-primary-foreground"><BriefcaseBusiness className="size-4" /></div><div><h2 className="text-sm font-bold">Workmate advisor</h2><p className="text-[11px] text-mist">Practical guidance with your judgment in the loop</p></div><Button className="ml-auto" disabled={!messages.length} onClick={() => setMessages([])} size="sm" variant="ghost">Clear</Button></div>
+      <div className="flex items-center gap-3 border-b border-border px-5 py-4"><div className="grid size-9 place-items-center rounded-lg bg-accent-deep text-primary-foreground"><BriefcaseBusiness className="size-4" /></div><div><h2 className="text-sm font-bold">Workplace advisor</h2><p className="text-[11px] text-mist">Practical guidance with your judgment in the loop</p></div><Button className="ml-auto" disabled={!messages.length} onClick={() => setMessages([])} size="sm" variant="ghost">Clear</Button></div>
       <Conversation className="min-h-0 flex-1"><ConversationContent className="gap-5 p-5">
         {messages.length === 0 ? <ConversationEmptyState icon={<MessageCircle className="size-8" />} title="What can I help you work through?" description="Ask about communication, meetings, feedback, priorities, or team collaboration."><div className="grid max-w-lg gap-2 sm:grid-cols-2">{["How can I give constructive feedback?", "Help me prepare for a difficult meeting"].map((suggestion) => <Button key={suggestion} className="h-auto whitespace-normal py-3 text-left text-xs" onClick={() => submit(suggestion)} variant="outline">{suggestion}</Button>)}</div></ConversationEmptyState> : messages.map((message) => <Message from={message.role} key={message.id}><MessageContent className={message.role === "user" ? "bg-primary text-primary-foreground" : "max-w-2xl"}><MessageResponse>{message.content}</MessageResponse></MessageContent></Message>)}
         {status === "submitted" && <Message from="assistant"><MessageContent><Shimmer>Thinking through a practical response…</Shimmer></MessageContent></Message>}
@@ -197,5 +197,5 @@ function ResultBlock({ title, children }: { title: string; children: React.React
 }
 
 function ResponsibleAI() {
-  return <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-border bg-glass px-4 py-3 backdrop-blur-xl"><span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-warning/15 text-[10px] font-bold text-warning">i</span><p className="text-[11px] leading-relaxed text-mist"><strong className="text-ink">Responsible AI:</strong> Workmate provides mock suggestions and may be inaccurate. Review facts, tone, and decisions yourself. Do not enter personal, sensitive, or confidential information.</p></div>;
+  return <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-border bg-glass px-4 py-3 backdrop-blur-xl"><span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-warning/15 text-[10px] font-bold text-warning">i</span><p className="text-[11px] leading-relaxed text-mist"><strong className="text-ink">Responsible AI:</strong> This assistant provides mock suggestions and may be inaccurate. Review facts, tone, and decisions yourself. Do not enter personal, sensitive, or confidential information.</p></div>;
 }
