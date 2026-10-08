@@ -30,9 +30,9 @@ const viewCopy: Record<View, { title: string; subtitle: string }> = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Workmate AI | Workplace Productivity Assistant" },
+      { title: "AI Workplace Productivity Assistant" },
       { name: "description", content: "Generate professional emails, ask workplace questions, and summarize research with a private, frontend-only AI assistant demo." },
-      { property: "og:title", content: "Workmate AI | Workplace Productivity Assistant" },
+      { property: "og:title", content: "AI Workplace Productivity Assistant" },
       { property: "og:description", content: "Professional email, workplace chat, and research tools in one focused workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -57,7 +57,7 @@ function WorkplaceApp() {
         <aside className={cn("fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col border-r border-border/70 bg-glass-strong p-4 backdrop-blur-2xl transition-transform md:static md:translate-x-0", mobileNav ? "translate-x-0" : "-translate-x-full")}>
           <div className="flex items-center gap-2.5 px-1 py-3">
             <div className="grid size-9 place-items-center rounded-lg bg-accent-deep text-primary-foreground shadow-sm"><BriefcaseBusiness className="size-4" /></div>
-            <div className="leading-tight"><div className="text-sm font-bold">Workmate</div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-mist">Workplace AI</div></div>
+            <div className="leading-tight"><div className="text-sm font-bold">AI Workplace</div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-mist">Productivity Assistant</div></div>
             <Button aria-label="Close menu" className="ml-auto md:hidden" onClick={() => setMobileNav(false)} size="icon-sm" variant="ghost"><X /></Button>
           </div>
           <nav aria-label="Main navigation" className="mt-4 flex flex-col gap-1">
