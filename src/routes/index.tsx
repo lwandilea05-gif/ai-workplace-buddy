@@ -95,11 +95,11 @@ function WorkplaceApp() {
 }
 
 function EmailGenerator() {
-  const [prompt, setPrompt] = useState("Write a short email to Priya and the Northwind Ops team confirming that the Q4 vendor review has moved to Thursday, 2:00 PM, and ask everyone to bring their shortlist notes.");
+  const [prompt, setPrompt] = useState("");
   const [tone, setTone] = useState<Tone>("Formal");
-  const [status, setStatus] = useState<"idle" | "loading" | "ready">("ready");
+  const [status, setStatus] = useState<"idle" | "loading" | "ready">("idle");
   const [copied, setCopied] = useState(false);
-  const [draft, setDraft] = useState("Subject: Q4 vendor review moved to Thursday, 2:00 PM\n\nHi Priya and team,\n\nThe Q4 vendor review has been moved to Thursday at 2:00 PM in the Riverside room. Please treat Thursday as the confirmed time.\n\nCould everyone bring their shortlist notes and the pricing sheet for their assigned vendors? I’ll share the consolidated agenda before the meeting.\n\nThanks,\nRachel");
+  const [draft, setDraft] = useState("");
 
   const generate = () => {
     if (!prompt.trim()) return;
