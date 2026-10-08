@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep the product frontend-only with deterministic mock AI responses because the user explicitly requested no backend or personal-data collection.
+- Compose chat surfaces from the installed AI Elements primitives so message rendering and input behavior remain consistent and accessible.
