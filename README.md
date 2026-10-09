@@ -1,74 +1,165 @@
-# AI Workplace Buddy
+# AI Workplace Productivity Assistant
 
-Build a modern, responsive SaaS-style web app called AI Workplace Productivity Assistant.
+## Project Overview
 
-Main Features
+The **AI Workplace Productivity Assistant** is a modern web application designed to help professionals complete common workplace tasks more efficiently using Artificial Intelligence (AI).
 
-Smart Email Generator
+The application provides tools for generating professional emails, communicating with an AI workplace assistant, and researching or summarising information. The goal of the project is to save time, improve communication, and make workplace tasks easier to manage.
 
-Generate professional emails from user prompts.
+## Features Implemented
 
-Tone options: Formal, Friendly, Persuasive.
+### 1. Smart Email Generator
 
-Show the generated email in an editable output box.
+* Generates professional emails using AI.
+* Supports different writing tones:
 
-AI Workplace Chatbot
+  * Formal
+  * Friendly
+  * Persuasive
+* Allows users to provide a topic or instructions for the email.
+* Produces ready-to-use email content.
 
-Interactive chat interface.
+### 2. AI Chatbot Interface
 
-Users can ask workplace-related questions and receive AI-generated responses.
+* Provides an interactive AI workplace assistant.
+* Allows users to enter questions and workplace-related prompts.
+* Provides AI-generated responses.
+* Can assist with ideas, explanations, workplace tasks, and general productivity.
 
-AI Research Assistant
+### 3. AI Research Assistant
 
-Allow users to enter a topic or article.
+* Allows users to enter a research topic or article.
+* Summarises information into simpler and shorter content.
+* Provides useful insights and recommendations.
+* Helps users understand information more quickly.
 
-Generate summaries, key insights, and recommendations.
+### 4. Dashboard
 
-UI/UX
+* Provides a central location for accessing the application's features.
+* Uses a modern and responsive interface.
+* Makes navigation between the different AI tools simple and easy.
 
-Professional dashboard layout with a sidebar navigation.
+## Technologies and Tools Used
 
-Clean, modern SaaS design.
+The project was developed using the following technologies and tools:
 
-Neutral professional colour palette.
+* **HTML5** – Used to create the structure of the web pages.
+* **CSS3** – Used for styling, layout, and responsive design.
+* **JavaScript** – Used to add interactivity and application functionality.
+* **AI / Generative AI** – Used for email generation, chatbot responses, and research assistance.
+* **Visual Studio Code** – Used as the development environment.
+* **Git** – Used for version control.
+* **GitHub** – Used to store and manage the project repository.
 
-Responsive for desktop and mobile.
+## Setup Instructions
 
-Clear input and output sections.
+### 1. Clone the Repository
 
-Include loading states and helpful empty states.
+Open a terminal or command prompt and run:
 
-Add a visible Responsible AI disclaimer.
+```bash
+git clone https://github.com/your-username/your-repository-name.git
+```
 
-Important
+Replace `your-username` and `your-repository-name` with your GitHub username and repository name.
 
-Frontend only — no backend.
+### 2. Open the Project
 
-No registration, login, or sign-in.
+Navigate to the project folder:
 
-Users must be able to use all features immediately without providing personal information.
+```bash
+cd your-repository-name
+```
 
-Use realistic mock AI responses where a backend/API is required.
+You can then open the project in Visual Studio Code:
 
-Keep the interface polished, simple, and easy to navigate.
+```bash
+code .
+```
 
-This project was built with [Lovable](https://lovable.dev).
+### 3. Configure the AI Service
 
-## Build with Lovable
+If the application uses an external AI API, create or configure the required API key according to the AI service being used.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/badac312-e0de-40ce-8eca-541adc601ca7).
+Do not upload private API keys or passwords to GitHub.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+For example, sensitive information should be stored in an environment file:
 
-## Development
+```text
+.env
+```
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+The `.env` file should be added to `.gitignore` so that it is not uploaded to GitHub.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+### 4. Run the Application
+
+If the project is a basic HTML, CSS, and JavaScript application, open the main HTML file in a web browser.
+
+Alternatively, use the **Live Server** extension in Visual Studio Code:
+
+1. Open the project in Visual Studio Code.
+2. Install the Live Server extension.
+3. Right-click `index.html`.
+4. Select **Open with Live Server**.
+5. The application will open in your web browser.
+
+If the project uses a framework or backend, install the required dependencies first:
+
+```bash
+npm install
+```
+
+Then start the development server:
+
+```bash
 npm run dev
 ```
+
+## Project Structure
+
+```text
+AI-Workplace-Productivity-Assistant/
+│
+├── index.html
+├── css/
+│   └── style.css
+│
+├── js/
+│   └── script.js
+│
+├── assets/
+│   └── images/
+│
+├── .gitignore
+└── README.md
+```
+
+## Usage
+
+After launching the application, users can:
+
+1. Open the dashboard.
+2. Select the required AI productivity tool.
+3. Enter their request or information.
+4. Select the required options, such as email tone.
+5. Generate an AI response.
+6. Review, edit, and use the generated information.
+
+## Purpose of the Project
+
+The purpose of this project is to demonstrate how AI can be used to improve workplace productivity. It combines common workplace tasks into one application and provides users with simple AI-powered tools for communication, research, and general assistance.
+
+## Future Improvements
+
+Possible future improvements include:
+
+* User accounts and authentication.
+* Saving previous conversations and generated emails.
+* Exporting emails and research summaries.
+* Voice input and voice responses.
+* Additional email tones and templates.
+* Integration with email platforms.
+* Improved AI personalisation.
+* Mobile application support.
+* Dark mode.
+
