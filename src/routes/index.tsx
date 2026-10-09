@@ -111,7 +111,7 @@ function keywordsFrom(text: string, count: number): string[] {
 
 function extractRecipient(prompt: string): string | null {
   const match = prompt.match(/\b(?:to|email|write|tell|ask|message)\s+([A-Z][a-z]+)\b/);
-  if (match && !["The", "Please", "Hi", "Hello", "Dear"].includes(match[1])) return match[1];
+  if (match?.[1] && !["The", "Please", "Hi", "Hello", "Dear"].includes(match[1])) return match[1];
   const anyName = prompt.match(/\b([A-Z][a-z]{2,})\b/g)?.filter((w) => !["Please", "Subject", "Hi", "Hello", "Dear", "Thanks", "Thank", "Best", "Kind", "Regards", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].includes(w));
   return anyName?.[0] ?? null;
 }
@@ -253,10 +253,10 @@ function buildResearchBrief(source: string): ResearchBrief {
   const k3 = keywords[2] ?? "the audience";
 
   return {
-    topic: topic[0].toUpperCase() + topic.slice(1),
+    topic: topic.charAt(0).toUpperCase() + topic.slice(1),
     summary: `Your source centers on ${topic}. The core idea: ${firstSentence.slice(0, 180)}${firstSentence.length > 180 ? "…" : ""} Taken together, the material suggests that ${k1} deserves deliberate attention, and that progress depends on understanding how ${k2} shapes day-to-day outcomes.`,
     insights: [
-      `${k1[0].toUpperCase() + k1.slice(1)} is the strongest recurring theme in your source and likely the highest-leverage area to act on.`,
+      `${k1.charAt(0).toUpperCase() + k1.slice(1)} is the strongest recurring theme in your source and likely the highest-leverage area to act on.`,
       `The relationship between ${k1} and ${k2} appears to drive most of the outcomes described.`,
       `Practical results depend less on effort and more on having clear, shared expectations around ${k3}.`,
     ],
