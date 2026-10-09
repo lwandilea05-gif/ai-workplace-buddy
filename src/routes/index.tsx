@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { BriefcaseBusiness, Check, Clipboard, FlaskConical, Mail, Menu, MessageCircle, PanelLeftClose, Send, X } from "lucide-react";
+import { BriefcaseBusiness, Check, Clipboard, FlaskConical, Mail, Menu, MessageCircle, PanelLeftClose, PenLine, X } from "lucide-react";
 import type { ChatStatus } from "ai";
 
 import { Conversation, ConversationContent, ConversationEmptyState, ConversationScrollButton } from "@/components/ai-elements/conversation";
@@ -94,6 +94,66 @@ function WorkplaceApp() {
   );
 }
 
+const STOP_WORDS = new Set(["the", "a", "an", "and", "or", "to", "of", "in", "on", "for", "with", "about", "that", "this", "is", "are", "was", "were", "be", "been", "it", "its", "as", "at", "by", "from", "we", "our", "us", "i", "me", "my", "you", "your", "they", "them", "their", "he", "she", "his", "her", "can", "could", "should", "would", "will", "please", "write", "email", "send", "tell", "ask", "let", "know", "hi", "hello", "dear", "regarding", "summarize", "summary", "research", "topic", "article", "what", "how", "why", "when", "who", "which", "effects", "effect", "impact"]);
+
+function keywordsFrom(text: string, count: number): string[] {
+  const seen = new Set<string>();
+  const words: string[] = [];
+  for (const raw of text.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/)) {
+    if (raw.length > 3 && !STOP_WORDS.has(raw) && !seen.has(raw)) {
+      seen.add(raw);
+      words.push(raw);
+      if (words.length >= count) break;
+    }
+  }
+  return words;
+}
+
+function extractRecipient(prompt: string): string | null {
+  const match = prompt.match(/\b(?:to|email|write|tell|ask|message)\s+([A-Z][a-z]+)\b/);
+  if (match?.[1] && !["The", "Please", "Hi", "Hello", "Dear"].includes(match[1])) return match[1];
+  const anyName = prompt.match(/\b([A-Z][a-z]{2,})\b/g)?.filter((w) => !["Please", "Subject", "Hi", "Hello", "Dear", "Thanks", "Thank", "Best", "Kind", "Regards", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].includes(w));
+  return anyName?.[0] ?? null;
+}
+
+function buildEmail(prompt: string, tone: Tone): string {
+  const recipient = extractRecipient(prompt);
+  const greeting = recipient ? `Hi ${recipient},` : "Hi there,";
+  const keywords = keywordsFrom(prompt, 4);
+  const topic = keywords.length ? keywords.slice(0, 3).join(", ") : "the matter below";
+  const firstKeyword = keywords[0] ?? "";
+  const subject = `Subject: ${firstKeyword ? firstKeyword[0]!.toUpperCase() + firstKeyword.slice(1) : "Following up"} — quick note`;
+
+  const lower = prompt.toLowerCase();
+  let purpose: string;
+  if (lower.includes("meeting") || lower.includes("schedule")) purpose = "I’d like to set up a time for us to talk this through. Could you share your availability over the next few days?";
+  else if (lower.includes("thank")) purpose = "I wanted to thank you sincerely for your help — it made a real difference, and I really appreciate the time you put in.";
+  else if (lower.includes("leave") || lower.includes("vacation") || lower.includes("time off")) purpose = "I’d like to request some time off and want to make sure everything is covered while I’m away. Please let me know if the dates work for the team.";
+  else if (lower.includes("deadline") || lower.includes("delay") || lower.includes("late")) purpose = "I wanted to give you an honest update on our timeline and propose a revised date that keeps the quality where it needs to be.";
+  else if (lower.includes("apolog") || lower.includes("sorry")) purpose = "I owe you an apology for how this was handled. I take it seriously, and here’s what I’m doing to put it right.";
+  else if (lower.includes("resign") || lower.includes("notice")) purpose = "After careful consideration, I’ve decided to move on to a new opportunity. I’m grateful for my time here and will ensure a smooth handover.";
+  else purpose = `I wanted to reach out about ${topic}. ${prompt.trim().replace(/\s+/g, " ").slice(0, 140)}${prompt.trim().length > 140 ? "…" : ""}`;
+
+  const toneOpeners: Record<Tone, string> = {
+    Formal: "I hope this message finds you well.",
+    Friendly: "Hope you’re doing well!",
+    Persuasive: "I’ll keep this short, because I think there’s a real opportunity here.",
+  };
+  const toneClosers: Record<Tone, string> = {
+    Formal: "Thank you for your time and consideration. I look forward to your response.",
+    Friendly: "Thanks a lot — looking forward to hearing from you!",
+    Persuasive: "I’m confident this is worth your time — shall we take the next step this week?",
+  };
+
+  return `${subject}\n\n${greeting}\n\n${toneOpeners[tone]}\n\n${purpose}\n\n${toneClosers[tone]}\n\nBest regards,\n[Your name]`;
+}
+
+const toneFonts: Record<Tone, string> = {
+  Formal: "font-serif",
+  Friendly: "font-sans",
+  Persuasive: "font-serif italic",
+};
+
 function EmailGenerator() {
   const [prompt, setPrompt] = useState("");
   const [tone, setTone] = useState<Tone>("Formal");
@@ -105,8 +165,7 @@ function EmailGenerator() {
     if (!prompt.trim()) return;
     setStatus("loading");
     window.setTimeout(() => {
-      const intro = tone === "Friendly" ? "Hi Priya and team,\n\nHope you’re all doing well." : tone === "Persuasive" ? "Hi Priya and team,\n\nTo keep our Q4 vendor decision on track," : "Hi Priya and team,";
-      setDraft(`Subject: Q4 vendor review — Thursday at 2:00 PM\n\n${intro}\n\nThe Q4 vendor review has moved to Thursday at 2:00 PM. Please bring your shortlist notes and any relevant pricing details so we can make the session as productive as possible.\n\nI’ll circulate the consolidated agenda before the meeting.\n\nBest,\nRachel`);
+      setDraft(buildEmail(prompt, tone));
       setStatus("ready");
     }, 900);
   };
@@ -121,17 +180,27 @@ function EmailGenerator() {
     <div className="grid gap-4 lg:grid-cols-[minmax(0,350px)_minmax(0,1fr)]">
       <section className="glass-panel rounded-lg p-4 sm:p-5">
         <label className="text-[11px] font-bold uppercase tracking-[0.12em] text-mist" htmlFor="email-prompt">What should the email say?</label>
-        <Textarea id="email-prompt" className="mt-2 min-h-36 resize-none border-border bg-glass-strong text-[13px] leading-relaxed" onChange={(event) => setPrompt(event.target.value)} value={prompt} />
+        <Textarea id="email-prompt" className="mt-2 min-h-36 resize-none border-border bg-glass-strong text-[13px] leading-relaxed" onChange={(event) => setPrompt(event.target.value)} placeholder="Example: Write an email to David asking to reschedule our project kickoff meeting to next week…" value={prompt} />
         <fieldset className="mt-4"><legend className="text-[11px] font-bold uppercase tracking-[0.12em] text-mist">Tone</legend><div className="mt-2 grid grid-cols-3 gap-1 rounded-full bg-glass p-1 ring-1 ring-border">
           {(["Formal", "Friendly", "Persuasive"] as Tone[]).map((item) => <Button key={item} className="rounded-full text-xs shadow-none" onClick={() => setTone(item)} size="sm" variant={tone === item ? "default" : "ghost"}>{item}</Button>)}
         </div></fieldset>
         <Button className="mt-5 w-full" disabled={!prompt.trim() || status === "loading"} onClick={generate}>{status === "loading" ? <Shimmer className="text-primary-foreground">Drafting your email…</Shimmer> : <><Mail />Generate email</>}</Button>
-        <div className="mt-3 flex items-center gap-2 rounded-md bg-glass px-3 py-2 text-[11px] text-mist ring-1 ring-border"><span className={cn("size-1.5 rounded-full", status === "loading" ? "bg-warning" : "bg-success")} />{status === "loading" ? "Creating a polished draft" : "Draft ready · editable output"}</div>
+        <div className="mt-3 flex items-center gap-2 rounded-md bg-glass px-3 py-2 text-[11px] text-mist ring-1 ring-border"><span className={cn("size-1.5 rounded-full", status === "loading" ? "bg-warning" : "bg-success")} />{status === "loading" ? "Creating a polished draft" : status === "ready" ? "Draft ready · editable output" : "Describe your email to get started"}</div>
       </section>
       <section className="glass-panel flex min-h-[430px] flex-col rounded-lg p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-2"><div><div className="text-[11px] font-bold uppercase tracking-[0.12em] text-mist">Generated email</div><div className="mt-1 text-[13px] font-semibold">Review and edit before sending</div></div><Button aria-label="Copy email" onClick={copyDraft} size="icon-sm" variant="outline">{copied ? <Check /> : <Clipboard />}</Button></div>
-        {status === "loading" ? <div className="mt-4 flex flex-1 flex-col items-center justify-center rounded-lg border border-border bg-glass-strong"><Shimmer className="font-medium">Writing a clear, professional draft…</Shimmer></div> : <Textarea aria-label="Editable generated email" className="mt-4 min-h-[310px] flex-1 resize-none border-border bg-glass-strong p-4 text-[13px] leading-6" onChange={(event) => setDraft(event.target.value)} value={draft} />}
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">{[["Tone check", `${tone} · clear`], ["Clarity", "Purpose stated early"], ["Reading time", "~30 seconds"]].map(([label, value]) => <div className="rounded-md bg-glass p-3 ring-1 ring-border" key={label}><div className="text-[11px] font-semibold">{label}</div><div className="mt-0.5 text-[11px] text-mist">{value}</div></div>)}</div>
+        <div className="flex items-center justify-between gap-2"><div><div className="text-[11px] font-bold uppercase tracking-[0.12em] text-mist">Generated email</div><div className="mt-1 text-[13px] font-semibold">Review and edit before sending</div></div><Button aria-label="Copy email" disabled={status !== "ready"} onClick={copyDraft} size="icon-sm" variant="outline">{copied ? <Check /> : <Clipboard />}</Button></div>
+        {status === "loading" ? (
+          <div className="mt-4 flex flex-1 flex-col items-center justify-center rounded-lg border border-border bg-glass-strong"><Shimmer className="font-medium">Writing a clear, professional draft…</Shimmer></div>
+        ) : status === "idle" ? (
+          <div className="mt-4 flex flex-1 flex-col items-center justify-center rounded-lg border border-border bg-glass-strong text-center">
+            <div className="grid size-12 place-items-center rounded-lg bg-glass text-primary ring-1 ring-border"><PenLine /></div>
+            <h3 className="mt-4 font-serif text-2xl font-semibold">Your email will appear here</h3>
+            <p className="mt-2 max-w-sm text-xs leading-relaxed text-mist">Describe the email you need — who it’s for and what it should say — then choose a tone and generate.</p>
+          </div>
+        ) : (
+          <Textarea aria-label="Editable generated email" className={cn("mt-4 min-h-[310px] flex-1 resize-none border-border bg-glass-strong p-4 text-[13px] leading-6", toneFonts[tone])} onChange={(event) => setDraft(event.target.value)} value={draft} />
+        )}
+        {status === "ready" && <div className="mt-3 grid gap-2 sm:grid-cols-3">{[["Tone check", `${tone} · clear`], ["Clarity", "Purpose stated early"], ["Reading time", "~30 seconds"]].map(([label, value]) => <div className="rounded-md bg-glass p-3 ring-1 ring-border" key={label}><div className="text-[11px] font-semibold">{label}</div><div className="mt-0.5 text-[11px] text-mist">{value}</div></div>)}</div>}
       </section>
     </div>
   );
@@ -172,24 +241,59 @@ function mockChatReply(question: string) {
   return "A useful way to approach this is to separate the **shared goal**, the **constraint**, and the **next action**. State each one plainly, invite the other person’s view, then confirm who will do what and by when.";
 }
 
+type ResearchBrief = { topic: string; summary: string; insights: string[]; recommendations: string[] };
+
+function buildResearchBrief(source: string): ResearchBrief {
+  const trimmed = source.trim().replace(/\s+/g, " ");
+  const firstSentence = trimmed.split(/[.!?]\s/)[0] || trimmed;
+  const keywords = keywordsFrom(trimmed, 6);
+  const topic = keywords.length ? keywords.slice(0, 3).join(", ") : firstSentence.slice(0, 60);
+  const k1 = keywords[0] ?? "the topic";
+  const k2 = keywords[1] ?? "the context";
+  const k3 = keywords[2] ?? "the audience";
+
+  return {
+    topic: topic.charAt(0).toUpperCase() + topic.slice(1),
+    summary: `Your source centers on ${topic}. The core idea: ${firstSentence.slice(0, 180)}${firstSentence.length > 180 ? "…" : ""} Taken together, the material suggests that ${k1} deserves deliberate attention, and that progress depends on understanding how ${k2} shapes day-to-day outcomes.`,
+    insights: [
+      `${k1.charAt(0).toUpperCase() + k1.slice(1)} is the strongest recurring theme in your source and likely the highest-leverage area to act on.`,
+      `The relationship between ${k1} and ${k2} appears to drive most of the outcomes described.`,
+      `Practical results depend less on effort and more on having clear, shared expectations around ${k3}.`,
+    ],
+    recommendations: [
+      `Define one measurable goal for ${k1} and review it weekly.`,
+      `Document decisions related to ${k2} so context is easy to find later.`,
+      `Revisit your approach to ${k3} after 30 days and adjust based on what the data shows.`,
+    ],
+  };
+}
+
 function ResearchAssistant() {
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(false);
+  const [brief, setBrief] = useState<ResearchBrief | null>(null);
   const canAnalyze = source.trim().length > 10;
   const words = useMemo(() => source.trim() ? source.trim().split(/\s+/).length : 0, [source]);
-  const analyze = () => { if (!canAnalyze) return; setLoading(true); setResult(false); window.setTimeout(() => { setLoading(false); setResult(true); }, 950); };
+  const analyze = () => {
+    if (!canAnalyze) return;
+    setLoading(true);
+    setBrief(null);
+    window.setTimeout(() => {
+      setBrief(buildResearchBrief(source));
+      setLoading(false);
+    }, 950);
+  };
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,390px)_minmax(0,1fr)]">
       <section className="glass-panel rounded-lg p-5"><div className="flex items-center gap-3"><div className="grid size-9 place-items-center rounded-lg bg-accent-deep text-primary-foreground"><FlaskConical className="size-4" /></div><div><h2 className="text-sm font-bold">Add your research</h2><p className="text-[11px] text-mist">Paste a topic, notes, or article text</p></div></div><Textarea className="mt-5 min-h-[330px] resize-none border-border bg-glass-strong text-[13px] leading-6" onChange={(event) => setSource(event.target.value)} placeholder="Example: Summarize the effects of asynchronous communication on hybrid teams, with practical recommendations for managers…" value={source} /><div className="mt-2 flex justify-between text-[10px] text-mist"><span>Use public, non-confidential information</span><span>{words} words</span></div><Button className="mt-4 w-full" disabled={!canAnalyze || loading} onClick={analyze}>{loading ? <Shimmer className="text-primary-foreground">Analyzing source…</Shimmer> : <><FlaskConical />Analyze research</>}</Button></section>
-      <section className="glass-panel min-h-[520px] rounded-lg p-5">{loading ? <div className="flex h-full min-h-[450px] flex-col items-center justify-center"><Shimmer className="text-sm font-semibold">Finding the signal in your source…</Shimmer><p className="mt-2 text-xs text-mist">Preparing summary, insights, and recommendations</p></div> : !result ? <div className="flex h-full min-h-[450px] flex-col items-center justify-center text-center"><div className="grid size-12 place-items-center rounded-lg bg-glass-strong text-primary ring-1 ring-border"><PanelLeftClose /></div><h3 className="mt-4 font-serif text-2xl font-semibold">Your analysis will appear here</h3><p className="mt-2 max-w-sm text-xs leading-relaxed text-mist">Add a topic or article to receive a concise summary, key insights, and practical recommendations.</p></div> : <ResearchResult />}</section>
+      <section className="glass-panel min-h-[520px] rounded-lg p-5">{loading ? <div className="flex h-full min-h-[450px] flex-col items-center justify-center"><Shimmer className="text-sm font-semibold">Finding the signal in your source…</Shimmer><p className="mt-2 text-xs text-mist">Preparing summary, insights, and recommendations</p></div> : !brief ? <div className="flex h-full min-h-[450px] flex-col items-center justify-center text-center"><div className="grid size-12 place-items-center rounded-lg bg-glass-strong text-primary ring-1 ring-border"><PanelLeftClose /></div><h3 className="mt-4 font-serif text-2xl font-semibold">Your analysis will appear here</h3><p className="mt-2 max-w-sm text-xs leading-relaxed text-mist">Add a topic or article to receive a concise summary, key insights, and practical recommendations.</p></div> : <ResearchResult brief={brief} />}</section>
     </div>
   );
 }
 
-function ResearchResult() {
-  return <div className="soft-rise"><div className="flex items-center justify-between"><div><div className="text-[11px] font-bold uppercase tracking-[0.12em] text-mist">Research brief</div><h2 className="mt-1 font-serif text-2xl font-semibold">A practical synthesis</h2></div><span className="rounded-full bg-glass-strong px-3 py-1 text-[10px] font-semibold text-success ring-1 ring-border">Analysis ready</span></div><div className="mt-5 space-y-3"><ResultBlock title="Summary">The source argues that effective hybrid work depends less on location and more on deliberate communication norms. Teams perform best when information is documented, decisions are easy to find, and synchronous meetings are reserved for discussion rather than status updates.</ResultBlock><ResultBlock title="Key insights"><ul className="list-disc space-y-1.5 pl-4"><li>Clear response-time expectations reduce unnecessary urgency.</li><li>Written decision records improve continuity across time zones.</li><li>Managers should measure outcomes instead of visible activity.</li></ul></ResultBlock><ResultBlock title="Recommendations"><ol className="list-decimal space-y-1.5 pl-4"><li>Create one searchable home for decisions and project context.</li><li>Replace one weekly status meeting with an async update.</li><li>Review communication norms with the team after 30 days.</li></ol></ResultBlock></div></div>;
+function ResearchResult({ brief }: { brief: ResearchBrief }) {
+  return <div className="soft-rise"><div className="flex items-center justify-between"><div><div className="text-[11px] font-bold uppercase tracking-[0.12em] text-mist">Research brief</div><h2 className="mt-1 font-serif text-2xl font-semibold">{brief.topic}</h2></div><span className="rounded-full bg-glass-strong px-3 py-1 text-[10px] font-semibold text-success ring-1 ring-border">Analysis ready</span></div><div className="mt-5 space-y-3"><ResultBlock title="Summary">{brief.summary}</ResultBlock><ResultBlock title="Key insights"><ul className="list-disc space-y-1.5 pl-4">{brief.insights.map((insight) => <li key={insight}>{insight}</li>)}</ul></ResultBlock><ResultBlock title="Recommendations"><ol className="list-decimal space-y-1.5 pl-4">{brief.recommendations.map((rec) => <li key={rec}>{rec}</li>)}</ol></ResultBlock></div></div>;
 }
 
 function ResultBlock({ title, children }: { title: string; children: React.ReactNode }) {
