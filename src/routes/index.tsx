@@ -121,7 +121,8 @@ function buildEmail(prompt: string, tone: Tone): string {
   const greeting = recipient ? `Hi ${recipient},` : "Hi there,";
   const keywords = keywordsFrom(prompt, 4);
   const topic = keywords.length ? keywords.slice(0, 3).join(", ") : "the matter below";
-  const subject = `Subject: ${keywords.length ? keywords[0][0].toUpperCase() + keywords[0].slice(1) : "Following up"} — quick note`;
+  const firstKeyword = keywords[0] ?? "";
+  const subject = `Subject: ${firstKeyword ? firstKeyword[0]!.toUpperCase() + firstKeyword.slice(1) : "Following up"} — quick note`;
 
   const lower = prompt.toLowerCase();
   let purpose: string;
@@ -244,10 +245,12 @@ type ResearchBrief = { topic: string; summary: string; insights: string[]; recom
 
 function buildResearchBrief(source: string): ResearchBrief {
   const trimmed = source.trim().replace(/\s+/g, " ");
-  const firstSentence = trimmed.split(/[.!?]\s/)[0] ?? trimmed;
+  const firstSentence = trimmed.split(/[.!?]\s/)[0] || trimmed;
   const keywords = keywordsFrom(trimmed, 6);
   const topic = keywords.length ? keywords.slice(0, 3).join(", ") : firstSentence.slice(0, 60);
-  const [k1 = "the topic", k2 = "the context", k3 = "the audience"] = keywords;
+  const k1 = keywords[0] ?? "the topic";
+  const k2 = keywords[1] ?? "the context";
+  const k3 = keywords[2] ?? "the audience";
 
   return {
     topic: topic[0].toUpperCase() + topic.slice(1),
